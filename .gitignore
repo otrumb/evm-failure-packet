@@ -1,0 +1,7 @@
+/evm-failure-packet
+/evm-failure-packet.exe
+/bin/
+*.test
+coverage.out
+.idea/
+.vscode/
