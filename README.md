@@ -6,11 +6,19 @@
 
 Requires Go 1.24.4 or later.
 
+This repository is source-only. It has no published tags or release artifacts; build the CLI from the checked-out source.
+
 ```sh
 go build -o evm-failure-packet .
-./evm-failure-packet --raw 0x08c379a0...
+./evm-failure-packet --raw 0x08c379a0000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000046f6f707300000000000000000000000000000000000000000000000000000000
 ./evm-failure-packet --input receipt.json --abi contract.json
 cat trace.json | ./evm-failure-packet --input - --abi contract.json --abi library.json
+```
+
+The synthetic raw input is the complete ABI encoding of `Error("oops")`. Its exact output is:
+
+```json
+{"schema":"evm-failure-packet/v1","provenance":{"input_shape":"raw","artifact_origin":"--raw","extraction_path":"$raw","artifact_sha256":"fdb36d023e421993e96708522915de79d2248966a461f3629a7694ab55d5c7cc","revert_data_sha256":"2c9ca18d84ef2fe1e385552765a4c3da8d4244d84b79051b7463d4793d8f9476"},"failure":{"raw":"0x08c379a0000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000046f6f707300000000000000000000000000000000000000000000000000000000","decoded":{"status":"decoded","selector":"0x08c379a0","name":"Error","signature":"Error(string)","source":"builtin","arguments":[{"name":"reason","type":"string","value":{"kind":"scalar","type":"string","text":"oops"}}]}}}
 ```
 
 Exactly one of `--raw` and `--input` is required. `--abi` may be repeated up to 32 times.
@@ -27,31 +35,6 @@ Errors identify exact JSON Pointer or call-frame path. Unsupported JSON shapes f
 ## Packet contract
 
 Packets use schema `evm-failure-packet/v1`. Provenance records input shape, artifact origin (`--raw`, `stdin`, or `path`), path when applicable, exact extraction path, artifact SHA-256, and revert-data SHA-256. Decoded standard errors use source `builtin`; custom-error matches use local ABI path. Ambiguous candidates sort by signature, then source.
-
-```json
-{
-  "schema": "evm-failure-packet/v1",
-  "provenance": {
-    "input_shape": "json_rpc_error",
-    "artifact_origin": "path",
-    "artifact_path": "failure.json",
-    "extraction_path": "/error/data",
-    "artifact_sha256": "<SHA-256 of exact input file bytes>",
-    "revert_data_sha256": "<SHA-256 of decoded revert bytes>"
-  },
-  "failure": {
-    "raw": "0x08c379a0...",
-    "decoded": {
-      "status": "decoded",
-      "selector": "0x08c379a0",
-      "name": "Error",
-      "signature": "Error(string)",
-      "source": "builtin",
-      "arguments": []
-    }
-  }
-}
-```
 
 ## Limits
 
